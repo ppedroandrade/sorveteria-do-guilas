@@ -49,7 +49,6 @@ WORKDIR /app
 COPY --from=build --chown=ubuntu:ubuntu /app/package.json /app/package-lock.json /app/next.config.ts /app/tsconfig.json ./
 COPY --from=build --chown=ubuntu:ubuntu /app/node_modules ./node_modules
 COPY --from=build --chown=ubuntu:ubuntu /app/.next ./.next
-COPY --from=build --chown=ubuntu:ubuntu /app/public ./public
 COPY --from=build --chown=ubuntu:ubuntu /app/prisma ./prisma
 COPY --from=build --chown=ubuntu:ubuntu /app/scripts ./scripts
 COPY --chown=ubuntu:ubuntu docker/entrypoint.sh /app/docker/entrypoint.sh
