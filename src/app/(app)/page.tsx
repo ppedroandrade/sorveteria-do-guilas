@@ -100,7 +100,7 @@ export default async function DashboardPage({
       </div>
 
       {/* Hoje e mês */}
-      <section className="grid grid-cols-2 gap-3 lg:grid-cols-4" aria-label="Indicadores principais">
+      <section className="grid grid-cols-2 gap-3 xl:grid-cols-4" aria-label="Indicadores principais">
         <StatCard
           label="Faturamento hoje"
           value={formatMoney(todaySales.soldCents, cur)}
@@ -131,7 +131,7 @@ export default async function DashboardPage({
       </section>
 
       {/* Operação */}
-      <section className="grid grid-cols-2 gap-3 lg:grid-cols-4" aria-label="Operação">
+      <section className="grid grid-cols-2 gap-3 xl:grid-cols-4" aria-label="Operação">
         <StatCard
           label="Pedidos pendentes"
           value={ops.pending}
@@ -163,8 +163,8 @@ export default async function DashboardPage({
         />
       </section>
 
-      <div className="grid gap-5 lg:grid-cols-3">
-        <Card className="lg:col-span-2">
+      <div className="grid gap-5 xl:grid-cols-3">
+        <Card className="min-w-0 xl:col-span-2">
           <CardHeader className="gap-3 sm:flex-row sm:items-start sm:justify-between">
             <div>
               <CardTitle>Vendas</CardTitle>
@@ -229,7 +229,7 @@ export default async function DashboardPage({
         </Card>
       </div>
 
-      <div className="grid gap-5 lg:grid-cols-3">
+      <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
         <Card>
           <CardHeader>
             <CardTitle>Sabores mais vendidos</CardTitle>
@@ -271,7 +271,7 @@ export default async function DashboardPage({
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="md:col-span-2 xl:col-span-1">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <AlertTriangle className="h-4 w-4 text-caramel" /> Estoque baixo

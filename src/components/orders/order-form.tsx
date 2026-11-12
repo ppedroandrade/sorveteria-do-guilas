@@ -237,7 +237,7 @@ export function OrderForm({
   const itemCount = (w.items ?? []).reduce((s, i) => s + safeQty(i?.quantity), 0);
 
   return (
-    <form onSubmit={onSubmit} className="pb-28 lg:pb-0" noValidate>
+    <form onSubmit={onSubmit} noValidate>
       {warnings && warnings.length > 0 && (
         <div className="mb-4 rounded-xl border border-caramel/30 bg-caramel-soft px-4 py-3 text-sm text-caramel-foreground">
           {warnings.map((w) => (
@@ -245,7 +245,7 @@ export function OrderForm({
           ))}
         </div>
       )}
-      <div className="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1fr)_380px]">
+      <div className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1fr)_380px]">
         <div className="min-w-0 space-y-5">
           {/* 1. Cliente */}
           <Card>
@@ -294,7 +294,7 @@ export function OrderForm({
               {visibleProducts.length === 0 ? (
                 <p className="py-8 text-center text-sm text-muted-foreground">Nenhum sabor encontrado.</p>
               ) : (
-                <div className="grid gap-2.5 sm:grid-cols-2">
+                <div className="grid gap-2.5 sm:grid-cols-2 2xl:grid-cols-3">
                   {visibleProducts.map((p) => {
                     const blocked = !p.isAvailable;
                     const low = p.trackStock && p.stockMilli <= p.minStockMilli;
@@ -550,7 +550,7 @@ export function OrderForm({
         </div>
 
         {/* Resumo / carrinho */}
-        <div className="min-w-0 lg:sticky lg:top-6 lg:self-start">
+        <div className="min-w-0 xl:sticky xl:top-6 xl:self-start">
           <Card className="overflow-hidden">
             <CardHeader className="border-b bg-secondary/40 pb-4">
               <CardTitle className="flex items-center justify-between">
@@ -660,7 +660,7 @@ export function OrderForm({
                   <dd className="font-display text-2xl font-semibold tabular">{formatMoney(totals.totalCents, currency)}</dd>
                 </div>
               </dl>
-              <div className="hidden border-t p-4 lg:block">
+              <div className="hidden border-t p-4 xl:block">
                 <Button type="submit" size="lg" className="w-full" loading={pending || formState.isSubmitting} disabled={!itemCount}>
                   {mode === "create" ? "Confirmar pedido" : "Salvar alterações"}
                 </Button>
@@ -671,7 +671,7 @@ export function OrderForm({
       </div>
 
       {/* Barra fixa no celular */}
-      <div className="no-print fixed inset-x-0 bottom-0 z-30 border-t bg-card/95 px-4 py-3 shadow-lift backdrop-blur lg:hidden">
+      <div className="no-print sticky bottom-0 z-30 -mx-4 mt-5 border-t bg-card/95 px-4 py-3 shadow-lift backdrop-blur sm:-mx-6 sm:px-6 xl:hidden">
         <div className="mx-auto flex max-w-3xl items-center gap-3">
           <div className="min-w-0 flex-1">
             <p className="text-xs text-muted-foreground">{itemCount} item(ns)</p>

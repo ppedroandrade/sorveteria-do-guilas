@@ -42,14 +42,14 @@ export function OrderActions({ orderId, status, netPaidCents }: { orderId: strin
     run(() => changeOrderStatusAction({ orderId, status: to }), { onSuccess: () => router.refresh() });
 
   return (
-    <div className="no-print flex flex-wrap items-center gap-2">
+    <div className="no-print flex w-full flex-wrap items-center gap-2 xl:w-auto">
       {next && (
-        <Button onClick={() => move(next)} loading={pending}>
+        <Button onClick={() => move(next)} loading={pending} className="flex-1 basis-full sm:basis-auto xl:flex-none">
           {NEXT_LABEL[status]} <ArrowRight />
         </Button>
       )}
       {editable && (
-        <Button asChild variant="outline">
+        <Button asChild variant="outline" className="flex-1 sm:flex-none">
           <Link href={`/pedidos/${orderId}/editar`}>
             <Pencil /> Editar
           </Link>

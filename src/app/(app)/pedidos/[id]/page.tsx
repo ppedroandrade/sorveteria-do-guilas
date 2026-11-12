@@ -72,16 +72,15 @@ export default async function OrderDetailPage({
         </div>
       )}
 
-      <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+      <div className="mb-6 flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
         <div>
           <div className="flex flex-wrap items-center gap-2">
             <h1 className="font-display text-3xl font-semibold">Pedido {formatOrderNumber(order.number)}</h1>
             <OrderStatusBadge status={order.status} />
             <PaymentStatusBadge status={order.paymentStatus} />
           </div>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Criado em {formatDateTime(order.createdAt, tz)} · ID {order.id}
-          </p>
+          <p className="mt-1 text-sm text-muted-foreground">Criado em {formatDateTime(order.createdAt, tz)}</p>
+          <p className="break-all text-xs text-muted-foreground/80">ID {order.id}</p>
         </div>
         <OrderActions orderId={order.id} status={order.status} netPaidCents={order.paidCents} />
       </div>
@@ -93,8 +92,8 @@ export default async function OrderDetailPage({
         </div>
       )}
 
-      <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_360px]">
-        <div className="space-y-5">
+      <div className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1fr)_360px]">
+        <div className="min-w-0 space-y-5">
           <Card>
             <CardHeader>
               <CardTitle>Produtos</CardTitle>
@@ -193,7 +192,7 @@ export default async function OrderDetailPage({
           </Card>
         </div>
 
-        <div className="space-y-5">
+        <div className="grid min-w-0 content-start gap-5 md:grid-cols-2 xl:grid-cols-1">
           <Card>
             <CardHeader>
               <CardTitle>Cliente</CardTitle>
@@ -248,7 +247,7 @@ export default async function OrderDetailPage({
             </CardContent>
           </Card>
 
-          <Card className="no-print">
+          <Card className="no-print md:col-span-2 xl:col-span-1">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <MessageCircle className="h-4 w-4 text-[#1f8f4e]" /> Resumo para WhatsApp

@@ -100,7 +100,7 @@ async function SalesReport({ sp, period, q, tz, cur }: { sp: SP; period: Period;
   };
   return (
     <div className="space-y-5">
-      <section className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+      <section className="grid grid-cols-2 gap-3 xl:grid-cols-4">
         <StatCard label="Vendido" value={formatMoney(summary.soldCents, cur)} tone="primary" />
         <StatCard label="Pedidos" value={summary.orderCount} />
         <StatCard label="Ticket médio" value={formatMoney(summary.averageTicketCents, cur)} />
@@ -171,7 +171,7 @@ async function ProductsReport({ period, q, cur }: { period: Period; q: Record<st
   const least = [...all].filter((p) => p.active).sort((a, b) => a.quantity - b.quantity || a.revenueCents - b.revenueCents).slice(0, 5);
   return (
     <div className="space-y-5">
-      <div className="grid gap-5 lg:grid-cols-3">
+      <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
         <Card>
           <CardHeader>
             <CardTitle>Mais vendidos</CardTitle>

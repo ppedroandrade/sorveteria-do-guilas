@@ -34,11 +34,11 @@ export function StatCard({
       )}
     >
       <div className="flex items-start justify-between gap-2">
-        <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{label}</p>
+        <p className="text-[11px] font-semibold uppercase leading-snug tracking-wide text-muted-foreground sm:text-xs">{label}</p>
         {icon && <span className={cn("rounded-lg p-2 [&_svg]:size-4", toneIcon)}>{icon}</span>}
       </div>
       <div>
-        <p className="font-display text-2xl font-semibold tabular sm:text-[1.7rem]">{value}</p>
+        <p className="font-display text-xl font-semibold leading-tight tabular sm:text-2xl xl:text-[1.7rem]">{value}</p>
         {hint && <p className="mt-0.5 text-xs text-muted-foreground">{hint}</p>}
       </div>
     </div>

@@ -58,7 +58,7 @@ export default async function CustomerPage({
           <ChevronLeft /> Clientes
         </Link>
       </Button>
-      <div className="mb-6 flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+      <div className="mb-6 flex flex-col gap-3 xl:flex-row xl:items-end xl:justify-between">
         <div>
           <h1 className="font-display text-3xl font-semibold">{customer.name}</h1>
           <p className="text-sm text-muted-foreground">
@@ -97,7 +97,7 @@ export default async function CustomerPage({
         </div>
       </div>
 
-      <section className="mb-5 grid grid-cols-2 gap-3 lg:grid-cols-4">
+      <section className="mb-5 grid grid-cols-2 gap-3 xl:grid-cols-4">
         <StatCard label="Total gasto" value={formatMoney(stats.totalSpentCents, cur)} tone="primary" />
         <StatCard label="Compras" value={stats.orderCount} hint="Pedidos não cancelados" />
         <StatCard label="Ticket médio" value={formatMoney(stats.averageTicketCents, cur)} />
@@ -109,7 +109,7 @@ export default async function CustomerPage({
         />
       </section>
 
-      <div className="grid gap-5 lg:grid-cols-[320px_minmax(0,1fr)]">
+      <div className="grid gap-5 xl:grid-cols-[320px_minmax(0,1fr)]">
         <div className="space-y-5">
           <Card>
             <CardHeader>

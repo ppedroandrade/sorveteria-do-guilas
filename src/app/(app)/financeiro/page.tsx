@@ -61,7 +61,7 @@ export default async function FinancePage({ searchParams }: { searchParams: Prom
         </Suspense>
       </div>
 
-      <section className="mb-5 grid grid-cols-2 gap-3 lg:grid-cols-4">
+      <section className="mb-5 grid grid-cols-2 gap-3 xl:grid-cols-4">
         <StatCard label="Total vendido" value={formatMoney(sales.soldCents, cur)} hint={`${sales.orderCount} pedido(s) · ticket ${formatMoney(sales.averageTicketCents, cur)}`} icon={<TrendingUp />} tone="primary" />
         <StatCard
           label="Total recebido"

@@ -57,7 +57,7 @@ export function ProductForm({
   const presentationName = (id: string | null | undefined) => presentations.find((p) => p.id === id)?.name;
 
   return (
-    <form onSubmit={onSubmit} className="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1fr)_340px]" noValidate>
+    <form onSubmit={onSubmit} className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1fr)_340px]" noValidate>
       <div className="min-w-0 space-y-5">
         <Card>
           <CardHeader>
@@ -204,7 +204,7 @@ export function ProductForm({
         </Card>
       </div>
 
-      <div className="space-y-5 lg:sticky lg:top-6 lg:self-start">
+      <div className="min-w-0 space-y-5 xl:sticky xl:top-6 xl:self-start">
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center justify-between">
