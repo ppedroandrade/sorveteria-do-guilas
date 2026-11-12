@@ -1,3 +1,14 @@
+---
+title: Gestão da Gelateria
+emoji: 🍨
+colorFrom: green
+colorTo: yellow
+sdk: docker
+app_port: 7860
+pinned: false
+short_description: Sistema de gestão para sorveteria artesanal
+---
+
 # Gestão da Gelateria
 
 Sistema web de gestão para sorveteria artesanal, de uso exclusivo do proprietário: pedidos, clientes, sabores, pagamentos, estoque, agenda de encomendas e relatórios. Interface 100% em português, responsiva (computador, tablet e celular).
@@ -13,11 +24,12 @@ Sistema web de gestão para sorveteria artesanal, de uso exclusivo do proprietá
 3. [Banco de dados, migrations e seed](#banco-de-dados-migrations-e-seed)
 4. [Conta do proprietário](#conta-do-proprietário)
 5. [Testes](#testes)
-6. [Deploy na Vercel](#deploy-na-vercel)
-7. [Arquitetura](#arquitetura)
-8. [Regras de negócio](#regras-de-negócio)
-9. [Segurança](#segurança)
-10. [Pendências e decisões em aberto](#pendências-e-decisões-em-aberto)
+6. [Docker e Hugging Face Spaces](#docker-e-hugging-face-spaces)
+7. [Deploy na Vercel](#deploy-na-vercel)
+8. [Arquitetura](#arquitetura)
+9. [Regras de negócio](#regras-de-negócio)
+10. [Segurança](#segurança)
+11. [Pendências e decisões em aberto](#pendências-e-decisões-em-aberto)
 
 ---
 
@@ -62,7 +74,8 @@ Edite o `.env`:
 | `DATABASE_URL` | Conexão usada pela aplicação. Em produção, use a URL **com pooling** do provedor. |
 | `DIRECT_URL` | Conexão direta (sem pooler) usada pelas migrations. Localmente, igual à `DATABASE_URL`. |
 | `TEST_DATABASE_URL` | Banco **exclusivo** para testes de integração (é limpo a cada teste). Nunca aponte para o banco real. |
-| `ADMIN_NAME`, `ADMIN_EMAIL`, `ADMIN_PASSWORD` | Conta do proprietário criada pelo seed (senha com 8+ caracteres). |
+| `ADMIN_NAME`, `ADMIN_LOGIN`, `ADMIN_PASSWORD` | Conta do proprietário criada pelo seed. Padrão: usuário **Guilas**, senha **Senha123** (o usuário não diferencia maiúsculas/minúsculas). |
+| `SESSION_COOKIE_SAMESITE` | `lax` (padrão) ou `none` (necessário para usar dentro de iframe, como na página do Hugging Face; exige HTTPS). |
 
 Crie os bancos (exemplo com `psql`):
 
@@ -84,7 +97,7 @@ npm run db:seed
 npm run dev
 ```
 
-Acesse http://localhost:3000 e entre com o e-mail/senha definidos no `.env`.
+Acesse http://localhost:3000 e entre com **Guilas** / **Senha123** (ou o que estiver no `.env`).
 
 ### Scripts
 
@@ -116,10 +129,10 @@ Entidades: `User`, `Session`, `BusinessSettings`, `Presentation`, `Category`, `P
 
 ## Conta do proprietário
 
-O seed cria a conta a partir de `ADMIN_EMAIL`/`ADMIN_PASSWORD`. Para criar depois ou redefinir a senha (a senha é pedida no terminal e não fica no histórico):
+O seed cria a conta a partir de `ADMIN_LOGIN`/`ADMIN_PASSWORD` (padrão **Guilas** / **Senha123**). O seed só cria a conta se ela ainda não existir — nunca sobrescreve uma senha já trocada. Para criar outra conta ou redefinir a senha (a senha é pedida no terminal e não fica no histórico):
 
 ```bash
-npm run create-admin -- --email dono@suagelateria.com --name "Seu Nome"
+npm run create-admin -- --login guilas --name "Guilas"
 ```
 
 Redefinir a senha encerra todas as sessões abertas. A senha também pode ser trocada em *Configurações → Acesso*.
@@ -139,6 +152,72 @@ Sem `TEST_DATABASE_URL`, os testes de integração são ignorados (os unitários
 
 ---
 
+## Docker e Hugging Face Spaces
+
+A imagem (`Dockerfile`) é única e autossuficiente: **Ubuntu 24.04 + Node.js 22 + PostgreSQL 16 embutido**, roda como usuário UID 1000 e escuta na porta **7860** — exatamente o que o Hugging Face Spaces (SDK Docker) espera. Na inicialização (`docker/entrypoint.sh`) ela:
+
+1. Usa o banco de `DATABASE_URL`, **se definido**; senão sobe o PostgreSQL embutido (só acessível de dentro do contêiner, com senha aleatória gerada no primeiro start).
+2. Aplica as migrations (`prisma migrate deploy`) e roda o seed idempotente (catálogo + conta Guilas).
+3. Inicia o app. Ao receber SIGTERM, encerra o app e desliga o PostgreSQL de forma limpa.
+
+### Onde ficam os dados
+
+| Cenário | Dados |
+|---|---|
+| Secret `DATABASE_URL` definido (ex.: Neon/Supabase gratuito) | Permanentes no banco externo — **recomendado** |
+| Sem `DATABASE_URL`, com *Persistent Storage* do Space ativado (montado em `/data`) | Permanentes em `/data/pgdata` |
+| Sem `DATABASE_URL` e sem `/data` | **Temporários** — perdidos quando o Space reinicia, é reconstruído ou “dorme” por inatividade. O log avisa. |
+
+### Publicar no Hugging Face Spaces
+
+1. Em https://huggingface.co/new-space crie um Space com **SDK: Docker** (template *Blank*). Recomendo **visibilidade privada** (veja o aviso de segurança abaixo).
+2. Em *Settings → Variables and secrets* do Space, crie os **secrets**:
+   - `ADMIN_PASSWORD` — a senha real do proprietário (**defina antes do primeiro start**; depois disso a senha só muda por *Configurações → Acesso*).
+   - `DATABASE_URL` — opcional, mas recomendado (URL do Neon/Supabase). Se usar pooler, defina também `DIRECT_URL` com a URL direta.
+   - Opcional: `ADMIN_LOGIN` (padrão `Guilas`) e `ADMIN_NAME`.
+3. Envie o código (o `README.md` já tem o cabeçalho YAML que o Spaces lê: `sdk: docker`, `app_port: 7860`). Use um *access token* do HF com permissão de escrita como senha:
+
+```bash
+git remote add space https://huggingface.co/spaces/SEU_USUARIO/SEU_SPACE
+```
+
+```bash
+git push space main
+```
+
+4. O Space faz o build sozinho (~5 min). Acesse pela página do Space ou, melhor, pelo endereço direto `https://SEU_USUARIO-SEU_SPACE.hf.space` (tela inteira, ideal para celular — dá para “Adicionar à tela inicial”).
+
+O app funciona **dentro da página do Hugging Face** (iframe): a imagem libera o embed apenas para `huggingface.co` (`Content-Security-Policy: frame-ancestors`) e usa cookie de sessão `SameSite=None; Secure; Partitioned`. Qualquer outro site continua impedido de embutir o sistema.
+
+> ⚠️ **Segurança:** se o Space for **público**, os arquivos do repositório (incluindo a senha padrão `Senha123` documentada aqui) ficam visíveis para qualquer pessoa. Nesse caso é **obrigatório** definir o secret `ADMIN_PASSWORD` antes do primeiro start — ou trocar a senha logo após o primeiro login. O log do contêiner avisa quando a senha padrão está em uso.
+
+### Rodar o contêiner localmente
+
+```bash
+docker compose up --build
+```
+
+Acesse http://localhost:7860 (Guilas / Senha123). O `docker-compose.yml` monta um volume em `/data` (dados persistentes) e usa cookie `SameSite=Lax` sem `Secure`, adequado para `http://localhost`.
+
+Sem compose:
+
+```bash
+docker build -t gelateria .
+```
+
+```bash
+docker run -p 7860:7860 -v gelateria-data:/data -e SESSION_COOKIE_SAMESITE=lax -e SESSION_COOKIE_SECURE=false gelateria
+```
+
+| Variável (runtime) | Padrão | Uso |
+|---|---|---|
+| `DATABASE_URL` / `DIRECT_URL` | — | Banco externo; sem ela, usa o PostgreSQL embutido |
+| `ADMIN_LOGIN` / `ADMIN_PASSWORD` / `ADMIN_NAME` | `Guilas` / `Senha123` / `Guilas` | Conta criada no primeiro start |
+| `SESSION_COOKIE_SAMESITE` | `none` | `lax` para acesso direto por HTTP local |
+| `SESSION_COOKIE_SECURE` | `true` | `false` apenas para HTTP local |
+| `EMBEDDED_PG_PORT` | `5432` | Porta interna do PostgreSQL embutido |
+| `PORT` | `7860` | Porta do app |
+
 ## Deploy na Vercel
 
 1. Crie um banco PostgreSQL gerenciado (ex.: **Neon**, **Supabase**, Vercel Postgres/Neon, Railway).
@@ -150,7 +229,7 @@ Sem `TEST_DATABASE_URL`, os testes de integração são ignorados (os unitários
 5. Rode o seed uma vez apontando para o banco de produção (da sua máquina):
 
 ```bash
-DATABASE_URL="<url-direta-de-producao>" DIRECT_URL="<url-direta-de-producao>" ADMIN_EMAIL="voce@dominio.com" ADMIN_PASSWORD="<senha-forte>" npm run db:seed
+DATABASE_URL="<url-direta-de-producao>" DIRECT_URL="<url-direta-de-producao>" ADMIN_LOGIN="Guilas" ADMIN_PASSWORD="<senha-forte>" npm run db:seed
 ```
 
 Não é necessário nenhum serviço externo além do PostgreSQL: imagens de produto e logotipo são reduzidas no navegador e guardadas no banco; o WhatsApp usa links `wa.me` (sem integração paga).
@@ -211,13 +290,13 @@ Decisões principais:
 
 ## Segurança
 
-- Senhas com **bcrypt** (custo 12). Bloqueio de 15 min após 5 tentativas erradas; mensagem genérica (“e-mail ou senha incorretos”) e tempo de resposta equivalente quando o e-mail não existe.
-- Sessão: token aleatório de 256 bits em cookie `httpOnly`, `SameSite=Lax`, `Secure` em produção; no banco fica apenas o **SHA-256** do token. Expira em 30 dias, renovação automática, sessões vencidas são removidas.
+- Senhas com **bcrypt** (custo 12). Bloqueio de 15 min após 5 tentativas erradas; mensagem genérica (“usuário ou senha incorretos”) e tempo de resposta equivalente quando o usuário não existe.
+- Sessão: token aleatório de 256 bits em cookie `httpOnly`, `SameSite=Lax` e `Secure` em produção (`SameSite=None; Secure; Partitioned` na imagem Docker, para o iframe do Hugging Face — as Server Actions continuam protegidas pela checagem de origem do Next.js); no banco fica apenas o **SHA-256** do token. Expira em 30 dias, renovação automática, sessões vencidas são removidas.
 - Proteção em camadas: middleware (sem cookie → login/401), layout autenticado, **toda** server action e rota de API validam a sessão no banco.
 - Redirecionamento pós-login só aceita caminhos internos (evita open redirect).
 - Validação Zod no servidor + `CHECK constraints` no PostgreSQL.
-- CSV protegido contra injeção de fórmulas; cabeçalhos `X-Frame-Options`, `nosniff`, `Referrer-Policy`, `Permissions-Policy`.
-- Nenhuma credencial no código: tudo por variáveis de ambiente.
+- CSV protegido contra injeção de fórmulas; cabeçalhos `X-Frame-Options`/`frame-ancestors` (embed só pelo huggingface.co na imagem Docker), `nosniff`, `Referrer-Policy`, `Permissions-Policy`.
+- Credenciais por variáveis de ambiente. A única exceção é a conta padrão **Guilas / Senha123**, pedida explicitamente para o primeiro acesso — troque-a em produção (secret `ADMIN_PASSWORD` ou *Configurações → Acesso*).
 
 ---
 
@@ -231,5 +310,6 @@ Itens que dependem de informação do proprietário ou ficaram fora do escopo:
 4. **PDF** — não implementado; o comprovante é otimizado para impressão (o navegador permite “Salvar como PDF”) e os relatórios exportam CSV.
 5. **Edição de pedido entregue** — bloqueada por segurança; para corrigir, volte o status para “Pronto”.
 6. **Multiusuário/permissões** — fora do escopo (uso exclusivo do proprietário). O modelo `User` já permite adicionar contas via `create-admin`.
+9. **Hugging Face sem armazenamento persistente** — o plano gratuito não persiste dados do PostgreSQL embutido; use `DATABASE_URL` (Neon/Supabase têm camada gratuita) ou ative o Persistent Storage.
 7. **Backups** — dependem do provedor do PostgreSQL (Neon/Supabase oferecem backup automático/PITR); recomenda-se ativá-los.
 8. **Imagens** — guardadas no banco já reduzidas (~30–80 KB). Para catálogos muito grandes, considerar storage externo (ex.: Vercel Blob).

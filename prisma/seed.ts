@@ -45,21 +45,26 @@ async function main() {
   }
   console.log(`✔ Catálogo: ${created} sabores criados (${FLAVORS.length - created} já existiam).`);
 
-  const email = process.env.ADMIN_EMAIL?.trim().toLowerCase();
+  // ADMIN_LOGIN (usuário) — ADMIN_EMAIL é aceito por compatibilidade.
+  const login = (process.env.ADMIN_LOGIN ?? process.env.ADMIN_EMAIL)?.trim().toLowerCase();
   const password = process.env.ADMIN_PASSWORD;
-  if (!email || !password) {
-    console.warn("⚠ ADMIN_EMAIL/ADMIN_PASSWORD não definidos — nenhuma conta criada. Use `npm run create-admin`.");
+  if (!login || !password) {
+    console.warn("⚠ ADMIN_LOGIN/ADMIN_PASSWORD não definidos — nenhuma conta criada. Use `npm run create-admin`.");
   } else if (password.length < 8) {
     throw new Error("ADMIN_PASSWORD deve ter pelo menos 8 caracteres.");
   } else {
-    const user = await prisma.user.findUnique({ where: { email } });
+    const user = await prisma.user.findUnique({ where: { login } });
     if (!user) {
       await prisma.user.create({
-        data: { email, name: process.env.ADMIN_NAME?.trim() || "Proprietário", passwordHash: await bcrypt.hash(password, 12) },
+        data: {
+          login,
+          name: process.env.ADMIN_NAME?.trim() || process.env.ADMIN_LOGIN?.trim() || "Proprietário",
+          passwordHash: await bcrypt.hash(password, 12),
+        },
       });
-      console.log(`✔ Conta do proprietário criada: ${email}`);
+      console.log(`✔ Conta do proprietário criada: ${login}`);
     } else {
-      console.log(`✔ Conta ${email} já existe (senha mantida).`);
+      console.log(`✔ Conta ${login} já existe (senha mantida).`);
     }
   }
 }

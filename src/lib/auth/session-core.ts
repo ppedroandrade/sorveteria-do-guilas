@@ -19,7 +19,7 @@ export async function createSession(userId: string) {
   return { token, expiresAt };
 }
 
-export type SessionUser = { id: string; name: string; email: string };
+export type SessionUser = { id: string; name: string; login: string };
 
 /**
  * Valida o token do cookie. Sessões expiradas são removidas; sessões ativas são
@@ -32,7 +32,7 @@ export async function validateSessionToken(
   const id = hashToken(token);
   const session = await prisma.session.findUnique({
     where: { id },
-    include: { user: { select: { id: true, name: true, email: true } } },
+    include: { user: { select: { id: true, name: true, login: true } } },
   });
   if (!session) return null;
   if (session.expiresAt.getTime() <= Date.now()) {

@@ -9,10 +9,14 @@ import { createSession, invalidateSession, validateSessionToken, type SessionUse
 export async function startSession(userId: string) {
   const { token, expiresAt } = await createSession(userId);
   const jar = await cookies();
+  // "none" permite usar o sistema embutido em iframe (Hugging Face Spaces). Nesse caso o
+  // cookie precisa ser Secure e é "particionado" (CHIPS) para não depender de cookies de terceiros.
+  const crossSite = process.env.SESSION_COOKIE_SAMESITE === "none";
   jar.set(SESSION_COOKIE, token, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
+    secure: crossSite || (process.env.NODE_ENV === "production" && process.env.SESSION_COOKIE_SECURE !== "false"),
+    sameSite: crossSite ? "none" : "lax",
+    partitioned: crossSite || undefined,
     path: "/",
     expires: expiresAt,
   });
@@ -41,5 +45,13 @@ export async function endSession() {
   const s = await getCurrentSession();
   if (s) await invalidateSession(s.sessionId);
   const jar = await cookies();
-  jar.delete(SESSION_COOKIE);
+  const crossSite = process.env.SESSION_COOKIE_SAMESITE === "none";
+  jar.set(SESSION_COOKIE, "", {
+    httpOnly: true,
+    secure: crossSite || process.env.NODE_ENV === "production",
+    sameSite: crossSite ? "none" : "lax",
+    partitioned: crossSite || undefined,
+    path: "/",
+    maxAge: 0,
+  });
 }

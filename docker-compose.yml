@@ -1,0 +1,16 @@
+# Uso local: docker compose up --build  →  http://localhost:7860
+services:
+  app:
+    build: .
+    ports:
+      - "7860:7860"
+    environment:
+      # Acesso local por http: cookie de sessão sem SameSite=None/Secure.
+      SESSION_COOKIE_SAMESITE: lax
+      SESSION_COOKIE_SECURE: "false"
+      # ADMIN_LOGIN: Guilas
+      # ADMIN_PASSWORD: Senha123
+    volumes:
+      - gelateria-data:/data
+volumes:
+  gelateria-data:

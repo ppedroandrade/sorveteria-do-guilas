@@ -79,7 +79,7 @@ export default async function SettingsPage() {
         <Card className="xl:col-span-2">
           <CardHeader>
             <CardTitle>Acesso</CardTitle>
-            <CardDescription>Conectado como {user.email}</CardDescription>
+            <CardDescription>Conectado como {user.login}</CardDescription>
           </CardHeader>
           <CardContent>
             <PasswordForm />

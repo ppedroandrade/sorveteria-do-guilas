@@ -21,7 +21,7 @@ datasource db {
 model User {
   id               String    @id @default(cuid())
   name             String
-  email            String    @unique
+  login            String    @unique // nome de usuário (minúsculas) ou e-mail
   passwordHash     String
   failedLoginCount Int       @default(0)
   lockedUntil      DateTime?

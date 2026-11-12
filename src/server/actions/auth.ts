@@ -8,7 +8,7 @@ import { toActionError, type ActionResult } from "@/lib/errors";
 
 const MAX_ATTEMPTS = 5;
 const LOCK_MINUTES = 15;
-// hash fictício para manter o tempo de resposta parecido quando o e-mail não existe
+// hash fictício para manter o tempo de resposta parecido quando o usuário não existe
 const DUMMY_HASH = "$2b$12$zwlTVE34VETCyDJjvDKAB.Wdiz6zE1gUE5kFNyApvYbcT.mMhMO9q";
 
 function safeNext(next: unknown): string {
@@ -16,16 +16,16 @@ function safeNext(next: unknown): string {
   return next;
 }
 
-export async function loginAction(_prev: unknown, formData: FormData): Promise<{ error?: string; email?: string }> {
-  const rawEmail = String(formData.get("email") ?? "").slice(0, 200);
-  const parsed = loginSchema.safeParse({ email: rawEmail, password: formData.get("password") });
-  if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Dados inválidos.", email: rawEmail };
-  const { email, password } = parsed.data;
+export async function loginAction(_prev: unknown, formData: FormData): Promise<{ error?: string; login?: string }> {
+  const rawLogin = String(formData.get("login") ?? "").slice(0, 200);
+  const parsed = loginSchema.safeParse({ login: rawLogin, password: formData.get("password") });
+  if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Dados inválidos.", login: rawLogin };
+  const { login, password } = parsed.data;
 
-  const user = await prisma.user.findUnique({ where: { email } });
+  const user = await prisma.user.findUnique({ where: { login } });
   if (user?.lockedUntil && user.lockedUntil > new Date()) {
     const min = Math.ceil((user.lockedUntil.getTime() - Date.now()) / 60000);
-    return { error: `Muitas tentativas. Tente novamente em ${min} min.`, email };
+    return { error: `Muitas tentativas. Tente novamente em ${min} min.`, login: rawLogin };
   }
   const valid = await verifyPassword(password, user?.passwordHash ?? DUMMY_HASH);
   if (!user || !valid) {
@@ -39,7 +39,7 @@ export async function loginAction(_prev: unknown, formData: FormData): Promise<{
         },
       });
     }
-    return { error: "E-mail ou senha incorretos.", email };
+    return { error: "Usuário ou senha incorretos.", login: rawLogin };
   }
   await prisma.user.update({ where: { id: user.id }, data: { failedLoginCount: 0, lockedUntil: null } });
   // limpeza oportunista de sessões vencidas

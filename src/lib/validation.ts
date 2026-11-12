@@ -29,7 +29,7 @@ export const ORDER_STATUS_VALUES = ["PENDING", "IN_PREPARATION", "READY", "DELIV
 
 // ───────────── Auth ─────────────
 export const loginSchema = z.object({
-  email: z.string().trim().toLowerCase().email("Informe um e-mail válido."),
+  login: z.string().trim().toLowerCase().min(3, "Informe o usuário.").max(120),
   password: z.string().min(1, "Informe a senha.").max(200),
 });
 

@@ -10,7 +10,7 @@ d("autenticação e sessões", () => {
   let userId: string;
   beforeEach(async () => {
     await resetDb();
-    const u = await prisma.user.create({ data: { email: "dono@teste.com", name: "Dono", passwordHash: await hashPassword("senha-forte-1") } });
+    const u = await prisma.user.create({ data: { login: "guilas", name: "Dono", passwordHash: await hashPassword("senha-forte-1") } });
     userId = u.id;
   });
 
@@ -24,7 +24,7 @@ d("autenticação e sessões", () => {
   it("sessão válida identifica o usuário; o banco guarda só o hash do token", async () => {
     const { token } = await createSession(userId);
     const s = await validateSessionToken(token);
-    expect(s?.user.email).toBe("dono@teste.com");
+    expect(s?.user.login).toBe("guilas");
     expect(await prisma.session.findUnique({ where: { id: token } })).toBeNull();
     expect(await prisma.session.findUnique({ where: { id: hashToken(token) } })).not.toBeNull();
   });
