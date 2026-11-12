@@ -191,6 +191,25 @@ O app funciona **dentro da página do Hugging Face** (iframe): a imagem libera o
 
 > ⚠️ **Segurança:** se o Space for **público**, os arquivos do repositório (incluindo a senha padrão `Senha123` documentada aqui) ficam visíveis para qualquer pessoa. Nesse caso é **obrigatório** definir o secret `ADMIN_PASSWORD` antes do primeiro start — ou trocar a senha logo após o primeiro login. O log do contêiner avisa quando a senha padrão está em uso.
 
+### Deploy automático (GitHub → Hugging Face)
+
+Todo commit na branch `main` dispara o workflow `.github/workflows/deploy-huggingface.yml`:
+
+1. **Testes:** typecheck, lint e os testes unitários e de integração (PostgreSQL 16 de serviço). Se algo falhar, **nada é publicado**.
+2. **Deploy:** envia a `main` para o Space `PedroAndrade09/sorveteria-do-guilas` (`git push --force`; o GitHub é a fonte da verdade). O Space rebuilda sozinho em ~3 min e o site em https://gelateria.salvarotech.com é atualizado.
+
+Configuração (uma única vez): no GitHub, *Settings → Secrets and variables → Actions → New repository secret* → `HF_TOKEN` = token do Hugging Face com permissão de **escrita** no Space. Para publicar sem commit novo, use *Actions → Deploy no Hugging Face → Run workflow*.
+
+Fluxo do dia a dia:
+
+```bash
+git add -A && git commit -m "Ajusta preço do pistache" && git push origin main
+```
+
+Acompanhe em *Actions* no GitHub. Os logs do build e do app ficam em *Logs* no Space.
+
+> ⚠️ Cada deploy **reinicia o contêiner**. Com o PostgreSQL embutido sem `/data`, isso **apaga os dados**. Configure o secret `DATABASE_URL` (ex.: Neon) ou o Persistent Storage do Space antes de usar em produção.
+
 ### Rodar o contêiner localmente
 
 ```bash

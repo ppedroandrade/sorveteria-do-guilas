@@ -1,0 +1,81 @@
+# Deploy contínuo: todo commit na main é testado e, se passar, publicado no
+# Hugging Face Space (https://gelateria.salvarotech.com).
+#
+# Pré-requisito (uma vez): secret do repositório HF_TOKEN
+#   GitHub → Settings → Secrets and variables → Actions → New repository secret
+#   Token do Hugging Face com permissão de escrita no Space.
+
+name: Deploy no Hugging Face
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: # permite publicar manualmente pela aba Actions
+
+# Um deploy por vez; um commit novo cancela o deploy anterior ainda em andamento.
+concurrency:
+  group: deploy-huggingface
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  HF_SPACE: PedroAndrade09/sorveteria-do-guilas
+
+jobs:
+  test:
+    name: Testes (typecheck, lint, unitários e integração)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: gelateria_test
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      TEST_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/gelateria_test?schema=public
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm test
+
+  deploy:
+    name: Publicar no Space
+    needs: test
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment:
+      name: producao
+      url: https://gelateria.salvarotech.com
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          lfs: false
+      - name: Enviar para o Hugging Face
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          if [ -z "$HF_TOKEN" ]; then
+            echo "::error::Secret HF_TOKEN não configurado (Settings → Secrets and variables → Actions)."
+            exit 1
+          fi
+          # O GitHub é a fonte da verdade: o histórico do Space é substituído pelo da main.
+          git push --force "https://hf-deploy:${HF_TOKEN}@huggingface.co/spaces/${HF_SPACE}" HEAD:main
+          echo "### Publicado no Hugging Face 🚀" >> "$GITHUB_STEP_SUMMARY"
+          echo "Commit \`${GITHUB_SHA::7}\` enviado. O Space faz o build em ~3 min: https://huggingface.co/spaces/${HF_SPACE}" >> "$GITHUB_STEP_SUMMARY"
