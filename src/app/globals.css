@@ -1,0 +1,76 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* creme / off-white */
+    --background: 38 45% 96%;
+    --foreground: 22 30% 18%;
+    --card: 40 60% 99%;
+    --card-foreground: 22 30% 18%;
+    --popover: 40 60% 99%;
+    --popover-foreground: 22 30% 18%;
+    /* pistache */
+    --primary: 92 27% 36%;
+    --primary-foreground: 60 40% 98%;
+    --primary-soft: 88 35% 90%;
+    /* marrom suave */
+    --secondary: 30 25% 91%;
+    --secondary-foreground: 22 30% 22%;
+    /* caramelo */
+    --caramel: 32 58% 46%;
+    --caramel-soft: 36 70% 92%;
+    --caramel-foreground: 28 55% 28%;
+    --muted: 36 28% 92%;
+    --muted-foreground: 25 12% 42%;
+    --accent: 36 40% 93%;
+    --accent-foreground: 22 30% 18%;
+    --destructive: 2 62% 46%;
+    --destructive-foreground: 0 0% 100%;
+    --destructive-soft: 4 80% 95%;
+    --border: 33 25% 87%;
+    --input: 33 22% 84%;
+    --ring: 92 27% 40%;
+    --sidebar: 34 38% 93%;
+    --sidebar-foreground: 22 30% 20%;
+    --radius: 0.85rem;
+  }
+
+  * {
+    @apply border-border;
+  }
+  html {
+    -webkit-tap-highlight-color: transparent;
+  }
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: "ss01", "cv11";
+  }
+  h1, h2, h3 {
+    @apply tracking-tight;
+  }
+  /* inputs numéricos sem setas */
+  input[type="number"]::-webkit-inner-spin-button,
+  input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+}
+
+@layer components {
+  .font-display {
+    font-variation-settings: "SOFT" 50, "WONK" 0;
+  }
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+  .scrollbar-thin {
+    scrollbar-width: thin;
+  }
+}
+
+@media print {
+  .no-print { display: none !important; }
+  body { background: white; }
+}
