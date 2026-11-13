@@ -67,6 +67,18 @@ jobs:
         with:
           fetch-depth: 0
           lfs: false
+      - name: Trava de segurança dos dados
+        env:
+          PERSISTENT_DB: ${{ vars.PERSISTENT_DB }}
+        run: |
+          # Publicar reinicia o Space. Com o PostgreSQL embutido sem disco persistente,
+          # isso APAGA todos os dados. Só publique depois de configurar DATABASE_URL
+          # (ex.: Neon) ou o Persistent Storage no Space e criar a variável
+          # PERSISTENT_DB=true em Settings → Secrets and variables → Actions → Variables.
+          if [ "$PERSISTENT_DB" != "true" ]; then
+            echo "::error::Deploy bloqueado: o Space ainda usa banco temporário e publicar apagaria os dados. Configure DATABASE_URL no Space e crie a variável PERSISTENT_DB=true no GitHub."
+            exit 1
+          fi
       - name: Enviar para o Hugging Face
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}

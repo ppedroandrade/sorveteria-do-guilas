@@ -198,7 +198,9 @@ Todo commit na branch `main` dispara o workflow `.github/workflows/deploy-huggin
 1. **Testes:** typecheck, lint e os testes unitários e de integração (PostgreSQL 16 de serviço). Se algo falhar, **nada é publicado**.
 2. **Deploy:** envia a `main` para o Space `PedroAndrade09/sorveteria-do-guilas` (`git push --force`; o GitHub é a fonte da verdade). O Space rebuilda sozinho em ~3 min e o site em https://gelateria.salvarotech.com é atualizado.
 
-Configuração (uma única vez): no GitHub, *Settings → Secrets and variables → Actions → New repository secret* → `HF_TOKEN` = token do Hugging Face com permissão de **escrita** no Space. Para publicar sem commit novo, use *Actions → Deploy no Hugging Face → Run workflow*.
+Configuração (uma única vez), no GitHub → *Settings → Secrets and variables → Actions*:
+- **Secret** `HF_TOKEN` = token do Hugging Face com permissão de **escrita** no Space.
+- **Variable** `PERSISTENT_DB` = `true` — crie **somente depois** de configurar `DATABASE_URL` (ou o Persistent Storage) no Space. Sem ela o deploy é bloqueado de propósito, porque publicar reinicia o Space e, com o banco temporário, apagaria todos os dados. Para publicar sem commit novo, use *Actions → Deploy no Hugging Face → Run workflow*.
 
 Fluxo do dia a dia:
 
